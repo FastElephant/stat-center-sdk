@@ -2,8 +2,9 @@
 
 namespace FastElephant\Stat;
 
+use AliyunMNS\Client;
+use AliyunMNS\Requests\SendMessageRequest;
 use GuzzleHttp\Client as HttpClient;
-use GuzzleHttp\Exception\GuzzleException;
 
 class StatClient
 {
@@ -35,8 +36,43 @@ class StatClient
         return $this->response;
     }
 
-    public function dispatch(array $param): array
+    /**
+     * @param array $param
+     * @param int $delay
+     * @return bool
+     */
+    public function dispatch(array $param, int $delay = 0): bool
     {
+        $client = new Client(config('stat-center.endPoint'), config('stat-center.accessId'), config('stat-center.accessKey'));
+        $queue = $client->getQueueRef(config('stat-center.queueName'));
+
+        $data = json_encode($param, JSON_UNESCAPED_UNICODE);
+
+        if (!$delay) {
+            $request = new SendMessageRequest($data);
+        } else {
+            $request = new SendMessageRequest($data, $delay);
+        }
+
+        try {
+            return $queue->sendMessage($request)->getMessageId();
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
+     * @param string $name
+     * @param array $filter
+     * @return array
+     */
+    public function command(string $name, array $filter): array
+    {
+        $param = [
+            'name' => $name,
+            'filter' => $filter,
+        ];
+        return $this->call('command', $param);
     }
 
     /**

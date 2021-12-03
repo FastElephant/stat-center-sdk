@@ -1,7 +1,7 @@
 <?php
 
 
-namespace FastElephant\Printer;
+namespace FastElephant\Stat;
 
 use Illuminate\Support\ServiceProvider;
 
