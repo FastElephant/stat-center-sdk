@@ -39,12 +39,39 @@ class StatClient
     /**
      * @param array $param
      * @param int $delay
-     * @return bool
+     * @return array
      */
-    public function dispatch(array $param, int $delay = 0): bool
+    public function dispatch(array $param, int $delay = 0): array
     {
         $client = new Client(config('stat-center.endPoint'), config('stat-center.accessId'), config('stat-center.accessKey'));
         $queue = $client->getQueueRef(config('stat-center.queueName'));
+
+        $method = $param['method'] ?? 'create';
+        $payload = $param['payload'] ?? [];
+
+        if (!in_array($method, ['create', 'update', 'delete'])) {
+            return ['code' => 500, 'msg' => 'method invalid!'];
+        }
+        if (!isset($param['archive_time'])) {
+            return ['code' => 500, 'msg' => 'archive_time required!'];
+        }
+        if (empty($payload)) {
+            return ['code' => 500, 'msg' => 'payload required!'];
+        }
+        if (!isset($payload['type'])) {
+            return ['code' => 500, 'msg' => 'payload.type required!'];
+        }
+        if (!isset($payload['timestamp'])) {
+            return ['code' => 500, 'msg' => 'payload.timestamp required!'];
+        }
+
+        $payload['biz'] = intval(config('stat-center.biz'));
+        $payload['type'] = intval($payload['type']);
+        $payload['timestamp'] = intval($payload['timestamp']);
+
+        $param['archive_time'] = intval($param['archive_time']);
+        $param['method'] = $method;
+        $param['payload'] = $payload;
 
         $data = json_encode($param, JSON_UNESCAPED_UNICODE);
 
@@ -55,9 +82,10 @@ class StatClient
         }
 
         try {
-            return $queue->sendMessage($request)->getMessageId();
+            $messageId = $queue->sendMessage($request)->getMessageId();
+            return ['code' => 0, 'task_id' => $messageId];
         } catch (\Throwable $e) {
-            return false;
+            return ['code' => 500, 'msg' => $e->getMessage()];
         }
     }
 
