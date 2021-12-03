@@ -1,0 +1,38 @@
+{
+  "name": "fast-elephant/stat-center-sdk",
+  "description": "fast-elephant/stat-center-sdk",
+  "type": "library",
+  "require": {
+    "php": "^7.0",
+    "ext-json": "*",
+    "guzzlehttp/guzzle": ">=6.0.0",
+    "aliyun/aliyun-mns-php-sdk": ">=1.1"
+  },
+  "require-dev": {
+  },
+  "autoload": {
+    "psr-4": {
+      "FastElephant\\Stat\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "FastElephant\\Stat\\Tests\\": "tests/"
+    }
+  },
+  "authors": [
+    {
+      "name": "monkey",
+      "email": "blaserr93@163.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "extra": {
+    "laravel": {
+      "providers": [
+        "FastElephant\\Stat\\StatServiceProvider"
+      ]
+    }
+  }
+}
