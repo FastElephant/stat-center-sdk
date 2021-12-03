@@ -69,6 +69,7 @@ class StatClient
     public function command(string $name, array $filter): array
     {
         $param = [
+            'biz' => config('stat-center.biz'),
             'name' => $name,
             'filter' => $filter,
         ];
