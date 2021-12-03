@@ -3,6 +3,7 @@
 namespace FastElephant\Stat;
 
 use GuzzleHttp\Client as HttpClient;
+use GuzzleHttp\Exception\GuzzleException;
 
 class StatClient
 {
@@ -55,7 +56,7 @@ class StatClient
 
         try {
             $strResponse = $client->post($apiUrl, ['json' => $this->request])->getBody()->getContents();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $strResponse = $e->getMessage();
             return ['code' => 550, 'msg' => $strResponse];
         } finally {
