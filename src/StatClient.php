@@ -85,7 +85,7 @@ class StatClient
             $messageId = $queue->sendMessage($request)->getMessageId();
             return ['code' => 0, 'task_id' => $messageId];
         } catch (\Throwable $e) {
-            return ['code' => 500, 'msg' => $e->getMessage()];
+            return ['code' => 502, 'msg' => $e->getMessage()];
         }
     }
 
