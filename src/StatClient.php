@@ -37,48 +37,30 @@ class StatClient
     }
 
     /**
-     * @param array $param
+     * @param array $params
      * @param int $delay
      * @return array
      */
-    public function dispatch(array $param, int $delay = 0): array
+    public function dispatch(array $params, int $delay = 0): array
     {
         $client = new Client(config('stat-center.endPoint'), config('stat-center.accessId'), config('stat-center.accessKey'));
         $queue = $client->getQueueRef(config('stat-center.queueName'));
 
-        $method = $param['method'] ?? 'create';
-        $payload = $param['payload'] ?? [];
-
-        if (!in_array($method, ['create', 'update', 'delete'])) {
-            return ['code' => 500, 'msg' => 'method invalid!'];
-        }
-        if (!isset($param['archive_time'])) {
-            return ['code' => 500, 'msg' => 'archive_time required!'];
-        }
-        if (empty($payload)) {
-            return ['code' => 500, 'msg' => 'payload required!'];
-        }
-        if (!isset($payload['type'])) {
-            return ['code' => 500, 'msg' => 'payload.type required!'];
-        }
-        if (!isset($payload['timestamp'])) {
-            return ['code' => 500, 'msg' => 'payload.timestamp required!'];
+        if (isset($params['method'])) {
+            $params = [$params];
         }
 
-        $payload['biz'] = intval(config('stat-center.biz'));
-        $payload['type'] = intval($payload['type']);
-        $payload['timestamp'] = intval($payload['timestamp']);
+        $messages = [];
+        foreach ($params as $param) {
+            array_push($messages, $this->formatParam($param));
+        }
 
-        $param['archive_time'] = intval($param['archive_time']);
-        $param['method'] = $method;
-        $param['payload'] = $payload;
-
-        $data = json_encode($param, JSON_UNESCAPED_UNICODE);
+        $messages = json_encode($messages, JSON_UNESCAPED_UNICODE);
 
         if (!$delay) {
-            $request = new SendMessageRequest($data);
+            $request = new SendMessageRequest($messages);
         } else {
-            $request = new SendMessageRequest($data, $delay);
+            $request = new SendMessageRequest($messages, $delay);
         }
 
         try {
@@ -165,5 +147,23 @@ class StatClient
     {
         list($mSec, $sec) = explode(' ', microtime());
         return (float)sprintf('%.0f', (floatval($mSec) + floatval($sec)) * 1000);
+    }
+
+    /**
+     * @param $param
+     * @return mixed
+     */
+    protected function formatParam($param)
+    {
+        $payload = $param['payload'] ?? [];
+        $payload['biz'] = intval(config('stat-center.biz'));
+        $payload['type'] = intval($payload['type']);
+        $payload['timestamp'] = intval($payload['timestamp']);
+
+        $param['method'] = strval($param['method'] ?? 'create');
+        $param['archive_time'] = intval($param['archive_time']);
+        $param['payload'] = $payload;
+
+        return $param;
     }
 }
