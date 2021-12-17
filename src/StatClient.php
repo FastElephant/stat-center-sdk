@@ -158,7 +158,7 @@ class StatClient
         $payload = $param['payload'] ?? [];
         $payload['biz'] = intval(config('stat-center.biz'));
         $payload['type'] = intval($payload['type']);
-        $payload['timestamp'] = intval($payload['timestamp']);
+        $payload['timestamp'] = intval($payload['timestamp'] ?? 0);
 
         $param['method'] = strval($param['method'] ?? 'create');
         $param['archive_time'] = intval($param['archive_time']);
